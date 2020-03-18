@@ -59,9 +59,16 @@
               <ul>
                   <li><a onclick="
                       event.preventDefault();
-
+                      store.dispatch({
+                        type :  'CHANGE_MODE',
+                        mode : 'create'
+                      })
                   " href="/create">create</a></li>
-                  <li><input type="button" value="delete" /></li>
+                  <li><input onclick = "
+                    store.dispatch({
+                      type : 'DELETE',
+                    })
+                  " type="button" value="delete"/></li>
               </ul>
               `;
       }
@@ -104,13 +111,20 @@
             }
             i = i + 1;
           }
+          document.querySelector("#content").innerHTML = `
+              <article>
+                  <h2>${aTitle}</h2>
+                  ${aDesc}
+              </article>
+                `;
+        } else if (state.mode === "welcome") {
+          document.querySelector("#content").innerHTML = `
+              <article>
+                  <h2>Welcome</h2>
+                 Hello, Redux!!!
+              </article>
+                `;
         }
-        // document.querySelector("#content").innerHTML = `
-        //       <article>
-        //           <h2>${aTitle}</h2>
-        //           ${aDesc}
-        //       </article>
-        //         `;
       }
       function reducer(state, action) {
         // 스토어가 호출한 reducer가 잘 호출되는지 확인하려면?
@@ -120,7 +134,7 @@
           return {
             // 아이디 기본값
             max_id: 2,
-            mode: "create",
+            mode: "welcome",
             selected_id: 2,
             contents: [
               { id: 1, title: "HTML", desc: "HTML is..." },
@@ -130,7 +144,10 @@
         }
         var newState;
         if (action.type === "SELECT") {
-          newState = Object.assign({}, state, { selected_id: action.id });
+          newState = Object.assign({}, state, {
+            selected_id: action.id,
+            mode: "read"
+          });
         } else if (action.type === "CREATE") {
           // state 복제
           // console.log("확실하니?!!!");
@@ -148,9 +165,28 @@
             mode: "read"
           });
           // console.log("확실하니?!!! newState", newState);
+        } else if (action.type === "DELETE") {
+          var newContents = [];
+          var i = 0;
+          while (i < state.contents.length) {
+            if (state.selected_id !== state.contents[i].id) {
+              newContents.push(state.contents[i]);
+              break;
+            }
+            i = i + 1;
+          }
+          newState = Object.assign({}, state, {
+            contents: newContents,
+            mode: "welcome"
+          });
+        } else if (action.type === "CHANGE_MODE") {
+          newState = Object.assign({}, state, {
+            mode: action.mode
+          });
+          console.log("newState", newState);
         }
         // console.log("마지막 newState", newState);
-        console.log(action, state, newState);
+        // console.log(action, state, newState);
 
         return newState;
       }
