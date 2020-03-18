@@ -57,7 +57,10 @@
       function control() {
         document.querySelector("#control").innerHTML = `
               <ul>
-                  <li><a href="/create">create</a></li>
+                  <li><a onclick="
+                      event.preventDefault();
+
+                  " href="/create">create</a></li>
                   <li><input type="button" value="delete" /></li>
               </ul>
               `;
@@ -65,22 +68,49 @@
 
       function article() {
         var state = store.getState();
-        var i = 0;
-        var aTitle, aDesc;
-        while (i < state.contents.length) {
-          if (state.contents[i].id === state.selected_id) {
-            aTitle = state.contents[i].title;
-            aDesc = state.contents[i].desc;
-            break;
-          }
-          i = i + 1;
-        }
-        document.querySelector("#content").innerHTML = `
+        if (state.mode === "create") {
+          document.querySelector("#content").innerHTML = `
               <article>
-                  <h2>${aTitle}</h2>
-                  ${aDesc}
+                <form onsubmit = "
+                    event.preventDefault();
+                    var _title = this.title.value;
+                    var _desc = this.desc.value;
+                    store.dispatch({
+                      type : 'CREATE',
+                      title : _title,
+                      desc : _desc
+                    })
+                    ">
+                      <p>
+                         <input type = "text" name="title" placeholder="title">
+                      </p>
+                      <p>
+                          <textarea name ="desc" placeholder="description"></textarea>
+                      </p>
+                      <p>
+                          <input type="submit">
+                      </p>
+                </form>
               </article>
                 `;
+        } else if (state.mode === "read") {
+          var i = 0;
+          var aTitle, aDesc;
+          while (i < state.contents.length) {
+            if (state.contents[i].id === state.selected_id) {
+              aTitle = state.contents[i].title;
+              aDesc = state.contents[i].desc;
+              break;
+            }
+            i = i + 1;
+          }
+        }
+        // document.querySelector("#content").innerHTML = `
+        //       <article>
+        //           <h2>${aTitle}</h2>
+        //           ${aDesc}
+        //       </article>
+        //         `;
       }
       function reducer(state, action) {
         // 스토어가 호출한 reducer가 잘 호출되는지 확인하려면?
@@ -88,6 +118,9 @@
         // state 초기값 설정
         if (state === undefined) {
           return {
+            // 아이디 기본값
+            max_id: 2,
+            mode: "create",
             selected_id: 2,
             contents: [
               { id: 1, title: "HTML", desc: "HTML is..." },
@@ -98,12 +131,32 @@
         var newState;
         if (action.type === "SELECT") {
           newState = Object.assign({}, state, { selected_id: action.id });
+        } else if (action.type === "CREATE") {
+          // state 복제
+          // console.log("확실하니?!!!");
+          var newMaxId = state.max_id + 1;
+          var newContents = state.contents.concat();
+          newContents.push({
+            id: newMaxId,
+            title: action.title,
+            desc: action.desc
+          });
+          // console.log("확실하니?!!! newContents", newContents);
+          newState = Object.assign({}, state, {
+            max_id: newMaxId,
+            contents: newContents,
+            mode: "read"
+          });
+          // console.log("확실하니?!!! newState", newState);
         }
-        // console.log(action, state, newState);
+        // console.log("마지막 newState", newState);
+        console.log(action, state, newState);
+
         return newState;
       }
       const store = Redux.createStore(reducer);
       store.subscribe(article);
+      store.subscribe(TOC);
       subject();
       TOC();
       control();
