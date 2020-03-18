@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>실전 Redux</title>
+    <head>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.js"></script>
+    </head>
   </head>
   <body>
     <!-- 부품화(모듈화) - 플레이스 홀더 -->
@@ -13,7 +16,7 @@
     <div id="content"></div>
     <script>
       function subject() {
-        document.querySelector("#subject").innerHTML = ` 
+        document.querySelector("#subject").innerHTML = `
         <header>
             <h1>WEB</h1>
             Hello,WEB!
@@ -22,11 +25,23 @@
       }
 
       function TOC() {
+        const state = store.getState();
+        var i = 0;
+        var liTags = "";
+        while (i < state.contents.length) {
+          liTags =
+            liTags +
+            `
+              <li>
+                <a href="${state.contents[i].id}">${state.contents[i].title}</a>
+              </li>`;
+          i = i + 1;
+        }
+
         document.querySelector("#toc").innerHTML = `
           <nav>
             <ol>
-                <li><a href="1.html">HTML</a></li>
-                <li><a href="2.html">CSS</a></li>
+                ${liTags}
             </ol>
           </nav>
           `;
@@ -49,6 +64,18 @@
         </article>
           `;
       }
+      function reducer(state, action) {
+        // state 초기값 설정
+        if (state === undefined) {
+          return {
+            contents: [
+              { id: 1, title: "HTML", desc: "HTML is..." },
+              { id: 2, title: "CSS", desc: "CSS is..." }
+            ]
+          };
+        }
+      }
+      const store = Redux.createStore(reducer);
       subject();
       TOC();
       control();
