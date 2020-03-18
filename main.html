@@ -64,10 +64,21 @@
       }
 
       function article() {
+        var state = store.getState();
+        var i = 0;
+        var aTitle, aDesc;
+        while (i < state.contents.length) {
+          if (state.contents[i].id === state.selected_id) {
+            aTitle = state.contents[i].title;
+            aDesc = state.contents[i].desc;
+            break;
+          }
+          i = i + 1;
+        }
         document.querySelector("#content").innerHTML = `
               <article>
-                  <h2>HTML</h2>
-                  HTML is...
+                  <h2>${aTitle}</h2>
+                  ${aDesc}
               </article>
                 `;
       }
@@ -77,7 +88,7 @@
         // state 초기값 설정
         if (state === undefined) {
           return {
-            selected_id: null,
+            selected_id: 2,
             contents: [
               { id: 1, title: "HTML", desc: "HTML is..." },
               { id: 2, title: "CSS", desc: "CSS is..." }
@@ -88,10 +99,11 @@
         if (action.type === "SELECT") {
           newState = Object.assign({}, state, { selected_id: action.id });
         }
-        console.log(action, state, newState);
+        // console.log(action, state, newState);
         return newState;
       }
       const store = Redux.createStore(reducer);
+      store.subscribe(article);
       subject();
       TOC();
       control();
